@@ -61,12 +61,13 @@ def getAngle(b, h):
     return angle
 
 def aLength(b, h):
+    # the Pythagorean theorem
     a = sqrt(h**2-b**2)
     return a
 
 
 def getPathData(obj):
-    if obj.get("d"):# Os ydi'r cylch wedi ei drosi i wrthrych llwybr
+    if obj.get("d"):# If the selected circle is defined as a path object
         d = obj.get("d")
         p = simplepath.parsePath(d)
         if obj.get("transform"):
@@ -82,7 +83,7 @@ def getPathData(obj):
                     'ry': p[1][1][1],
                     'x' : p[0][1][0]-p[1][1][0],
                     'y' : p[0][1][1]}
-    elif obj.get("r"):# Ar gyfer gwrthrych cylch pur
+    elif obj.get("r"):# If the selected circle is defined as a circle object
         r = obj.get("r")
         cx = obj.get("cx")
         cy = obj.get("cy")
@@ -90,7 +91,7 @@ def getPathData(obj):
                 'ry' : float(r),
                 'x' : float(cx),
                 'y' : float(cy)}
-    elif obj.get("rx"):# Ar gyfer elips
+    elif obj.get("rx"):# If the selected circle is defined as an ellipse
         rx = obj.get("rx")
         ry = obj.get("ry")
         cx = obj.get("cx")
@@ -100,13 +101,13 @@ def getPathData(obj):
                 'x' : float(cx),
                 'y' : float(cy)}
     else:
-        stockErrorMsg("4")
+        stockErrorMsg("4")# for quick bug id
 
     return data
 
 
-def stockErrorMsg(bygtrac):
-    inkex.errormsg(_("Please select exactly two circles and try again! %s" % bygtrac))
+def stockErrorMsg(errID):
+    inkex.errormsg(_("Please select exactly two circles and try again! %s" % errID))
     exit()
 
 class Tangent(inkex.Effect):
@@ -122,9 +123,6 @@ class Tangent(inkex.Effect):
             
         c1object = self.selected[self.options.ids[0]]
         c2object = self.selected[self.options.ids[1]]
-
-        #if c1object.get(inkex.addNS("type", "sodipodi")) != "arc" or c2object.get(inkex.addNS("type", "sodipodi")) != "arc":
-        #    stockErrorMsg("2")#PROBLEM YMA!
 
         c1 = getPathData(c1object)
         c2 = getPathData(c2object)
@@ -154,20 +152,24 @@ class Tangent(inkex.Effect):
             stockErrorMsg("One or both objects may be elliptical.")
 
         # Hypotenws y triongl - pellter euclidaidd rhwng c1 x,y a c2 x,y.
+        # The hypotenuse of the triangle - euclidean distance between point c1 x,y and point c2 x,y
         h = deuclid(c1['x'], c1['y'], c2['x'], c2['y'])
         b = c3r
         B = getAngle(b, h)
         a = aLength(b, h)
         # Ongl yr hypotenws i echelin x
+        # The angle of the hypotenuse to the x axis
         E = getAngle(max(c1['y'], c2['y']) - min(c1['y'], c2['y']), h)
 
         # I destio os ydi'r cylch lleiaf yn is na'r llall
+        # Test whether the smallest circle is below the other
         if cyfB[1] <= cyfA[1]:
             negx = False
         else:
             negx = True
 
         # I destio os ydi'r cylch lleiaf i'r dde o'r llall
+        # Test whether the smallest circle is to the right of the other
         if cyfB[0] <= cyfA[0]:
             negy = False
         else:
